@@ -97,10 +97,13 @@ def status():
 
     try:
         curs = conn.cursor()
-        curs.execute("SELECT * FROM arrests;")
-        rows = curs.fetchall()
+        curs.execute("SELECT * FROM arrests ORDER BY RANDOM();")
+        rows = curs.fetchone()
         conn.close()
+        result = ""
         for row in rows:
-            print(row)
+            result = result + 'þ' + row
+        result = result[1:]
+        print(result)
     except Error as e:
         print(e)
