@@ -1,12 +1,41 @@
 import urllib.request
+#import PyPDF2.PdfFileReader
+import tempfile
+from bs4 import BeautifulSoup
+import re
+
+links = []
+normanpd_domain = "http://normanpd.normanok.gov"
 
 def fetchincidents(url):
     print("fetching incidents for " + url)
-    data = urllib.request.urlopen(url).read()
-    print(data)
+    html = urllib.request.urlopen(url).read()
+    #print(html)
+    soup = BeautifulSoup(html)
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href.find('.pdf') != -1 and href.find('Arrest'):
+            links.append(normanpd_domain + href)
+
+    for link in links:
+        print(link)
 
 def extractincidents():
     print("extracting incidents")
+    fp = tempfile.TemporaryFile()
+
+    # Write the pdf data to a temp file
+    fp.write(data.read())
+
+    # Set the curser of the file back to the begining
+    fp.seek(0)
+
+    # Read the PDF
+    pdfReader = PdfFileReader(fp)
+    pdfReader.getNumPages()
+
+    # Get the first page
+    page1 = pdfReader.getPage(0).extractText()
 
 def createdb():
     print("creating db")
