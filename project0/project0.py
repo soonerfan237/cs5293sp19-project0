@@ -64,9 +64,6 @@ def extractincidents():
             arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status[0:5])] #only using a substring of status here because things break when status is multiline
             arrestee_address = arrestee_address.replace('\n'," ")
             arrestee_address = arrestee_address.strip()
-            #arrestee_name_interm = line[0:line.find(arrestee_birthday)]
-            #arrestee_name_interm_split = arrestee_name_interm.splitlines()
-            #arrestee_name = arrestee_name_interm_split[-1]
             arrest_location_offense_name = line[line.find(case_number) + len(case_number):line.find(arrestee_birthday)]
             arrest_location_offense_name = arrest_location_offense_name.strip('\n')
             arrest_location_offense_name_split = arrest_location_offense_name.splitlines()
@@ -79,19 +76,17 @@ def extractincidents():
                     arrestee_name = arrest_location_offense_name_split[-2] + arrest_location_offense_name_split[-1]
                 else: #the name is just one line in length
                     arrestee_name = arrest_location_offense_name_split[-1]
-
+                if ' ' in arrest_location_offense_name_split[0][-1:]:
+                    arrest_location = arrest_location_offense_name_split[0] + arrest_location_offense_name_split[1]
+                    offense = arrest_location_offense_name[len(arrest_location_offense_name_split[0]) + len(arrest_location_offense_name_split[1]) + 1:arrest_location_offense_name.find(arrestee_name[:5])]
+                else:
+                    arrest_location = arrest_location_offense_name_split[0]
+                    offense = arrest_location_offense_name[arrest_location_offense_name.find(arrest_location) + len(arrest_location):arrest_location_offense_name.find(arrestee_name[:5])]
+            offense = offense.strip('\n')
+            offense = offense.replace('\n'," ")
+            arrest_location = arrest_location.replace('\n'," ")
             incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
             incidents.append(incident)
-            #populatedb(incident)
-        #for incident in page1_incidents:
-        #    print(incident)
-        #    incident_tuple = tuple(incident.splitlines())
-        #    incident_tuple_fix = (incident_tuple[1],incident_tuple[2],incident_tuple[3],incident_tuple[4],incident_tuple[5],incident_tuple[6],incident_tuple[7] + incident_tuple[8] + incident_tuple[9] + incident_tuple[10],incident_tuple[11],incident_tuple[12])
-        #    incidents.append(incident_tuple_fix)
-        #print(page1)
-    #for incident in incidents:
-    #    print(incident)
-        
 
 def createdb():
     print("creating db")
