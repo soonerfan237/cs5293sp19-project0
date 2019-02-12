@@ -51,16 +51,18 @@ def extractincidents():
             if line_withoutheader:
                 line = line_withoutheader.group(1)
             print("LINE: " + line)
-            line_split = tuple(line.splitlines())
-            arrest_time = line_split[1]
-            case_number = ''
+            line_split = tuple(line.splitlines()) #splitting on line breaks
+            arrest_time = line_split[1] #this element corresponds to arrest time column
+            case_number = line_split[2] #this element corresponds to case number
+            status = line_split[-2] #second to last element is status
+            officer = line_split[-1] #last element is officer
             arrest_location = ''
             offense = ''
             arrestee_name = ''
-            arrestee_birthday = ''
-            arrestee_address = ''
-            status = ''
-            officer = ''
+            arrestee_birthday = re.search(r'\n(\d+/\d+/\d{4})\n',line).group(1)
+            arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status)]
+            arrestee_address = arrestee_address.replace('\n'," ")
+            arrestee_address = arrestee_address.strip()
             incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
             incidents.append(incident)
             #populatedb(incident)
@@ -102,6 +104,8 @@ def populatedb():
         curs = conn.cursor()
         #curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", ("1","1","1","1","1","1","1","1","1"))
         for incident in incidents:
+            #print("INSERTING: ")
+            #print(incident)
             curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", incident)
 
         conn.commit()
