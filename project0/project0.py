@@ -54,12 +54,14 @@ def extractincidents():
             line_split = tuple(line.splitlines()) #splitting on line breaks
             arrest_time = line_split[1] #this element corresponds to arrest time column
             case_number = line_split[2] #this element corresponds to case number
-            status = line_split[-2] #second to last element is status
+            status = line_split[-2] #second to last element is usually status
+            if status.find("Citation") != -1: #citation status goes onto 2 lines, so we need to handle that separately
+                status = line_split[-3] + line_split[-2]
             officer = line_split[-1] #last element is officer
             arrest_location = ''
             offense = ''
             arrestee_birthday = re.search(r'\n(\d+/\d+/\d{4})\n',line).group(1)
-            arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status)]
+            arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status[0:5])] #only using a substring of status here because things break when status is multiline
             arrestee_address = arrestee_address.replace('\n'," ")
             arrestee_address = arrestee_address.strip()
             arrestee_name_interm = line[0:line.find(arrestee_birthday)]
