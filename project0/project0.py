@@ -58,11 +58,22 @@ def extractincidents():
             officer = line_split[-1] #last element is officer
             arrest_location = ''
             offense = ''
-            arrestee_name = ''
             arrestee_birthday = re.search(r'\n(\d+/\d+/\d{4})\n',line).group(1)
             arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status)]
             arrestee_address = arrestee_address.replace('\n'," ")
             arrestee_address = arrestee_address.strip()
+            arrestee_name_interm = line[0:line.find(arrestee_birthday)]
+            arrestee_name_interm_split = arrestee_name_interm.splitlines()
+            arrestee_name = arrestee_name_interm_split[-1]
+            arrest_location_offense_interm = line[line.find(case_number) + len(case_number):line.find(arrestee_name)]
+            arrest_location_offense_interm = arrest_location_offense_interm.strip('\n')
+            arrest_location_offense_interm_split = arrest_location_offense_interm.splitlines()
+            if len(arrest_location_offense_interm_split) == 2:
+                arrest_location = arrest_location_offense_interm_split[0]
+                offense  = arrest_location_offense_interm_split[1]
+            else:
+                print("TODO")
+
             incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
             incidents.append(incident)
             #populatedb(incident)
