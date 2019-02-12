@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import re
 import sqlite3
 from sqlite3 import Error
+import re
 
 links = []
 incidents = []
@@ -43,10 +44,26 @@ def extractincidents():
 
         # Get the first page
         page1 = pdfReader.getPage(0).extractText()
+        #print(page1)
         page1_incidents = page1.split(";")
-        for line in page1_incidents:
-            print(line)
-            #incidenttuple
+        for line in page1_incidents[1:-1]: #excluding first element which is null and last element which is a header in the pdf
+            line_withoutheader = re.search(r'Officer()',line)
+            if line_withoutheader:
+                line = line_withoutheader.group(1)
+            print("LINE: " + line)
+            line_split = tuple(line.splitlines())
+            arrest_time = line_split[1]
+            case_number = ''
+            arrest_location = ''
+            offense = ''
+            arrestee_name = ''
+            arrestee_birthday = ''
+            arrestee_address = ''
+            status = ''
+            officer = ''
+            incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
+            incidents.append(incident)
+            #populatedb(incident)
         #for incident in page1_incidents:
         #    print(incident)
         #    incident_tuple = tuple(incident.splitlines())
@@ -66,8 +83,10 @@ def createdb():
 
     try:
         curs = conn.cursor()
-        #curs.execute("DROP TABLE arrests")
+        curs.execute("DROP TABLE arrests;")
+        conn.commit()
         curs.execute("""CREATE TABLE arrests (arrest_time TEXT,case_number TEXT,arrest_location TEXT,offense TEXT,arrestee_name TEXT,arrestee_birthday TEXT,arrestee_address TEXT,status TEXT,officer TEXT);""")
+        conn.commit()
         conn.close()
     except Error as e:
         print(e)
@@ -81,7 +100,10 @@ def populatedb():
     
     try:
         curs = conn.cursor()
-        curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", ("1","1","1","1","1","1","1","1","1"))
+        #curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", ("1","1","1","1","1","1","1","1","1"))
+        for incident in incidents:
+            curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", incident)
+
         conn.commit()
         conn.close()
     except Error as e:
