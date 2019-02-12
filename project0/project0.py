@@ -64,17 +64,21 @@ def extractincidents():
             arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status[0:5])] #only using a substring of status here because things break when status is multiline
             arrestee_address = arrestee_address.replace('\n'," ")
             arrestee_address = arrestee_address.strip()
-            arrestee_name_interm = line[0:line.find(arrestee_birthday)]
-            arrestee_name_interm_split = arrestee_name_interm.splitlines()
-            arrestee_name = arrestee_name_interm_split[-1]
-            arrest_location_offense_interm = line[line.find(case_number) + len(case_number):line.find(arrestee_name)]
-            arrest_location_offense_interm = arrest_location_offense_interm.strip('\n')
-            arrest_location_offense_interm_split = arrest_location_offense_interm.splitlines()
-            if len(arrest_location_offense_interm_split) == 2:
-                arrest_location = arrest_location_offense_interm_split[0]
-                offense  = arrest_location_offense_interm_split[1]
-            else:
-                print("TODO")
+            #arrestee_name_interm = line[0:line.find(arrestee_birthday)]
+            #arrestee_name_interm_split = arrestee_name_interm.splitlines()
+            #arrestee_name = arrestee_name_interm_split[-1]
+            arrest_location_offense_name = line[line.find(case_number) + len(case_number):line.find(arrestee_birthday)]
+            arrest_location_offense_name = arrest_location_offense_name.strip('\n')
+            arrest_location_offense_name_split = arrest_location_offense_name.splitlines()
+            if len(arrest_location_offense_name_split) == 3: #if there are only 3 fields here, we know what each one is
+                arrest_location = arrest_location_offense_name_split[0]
+                offense  = arrest_location_offense_name_split[1]
+                arrestee_name = arrest_location_offense_name_split[2]
+            else: #if more than 3 fields, we have to find which lines correspond to which field
+                if ' ' in arrest_location_offense_name_split[-2][-1:]: #if a line ends in a space we know it is because it bleeds over into the next line. so if the second to last line ends in a space we know the name is contained in the two columns here.
+                    arrestee_name = arrest_location_offense_name_split[-2] + arrest_location_offense_name_split[-1]
+                else: #the name is just one line in length
+                    arrestee_name = arrest_location_offense_name_split[-1]
 
             incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
             incidents.append(incident)
