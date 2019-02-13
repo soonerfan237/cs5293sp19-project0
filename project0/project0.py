@@ -7,12 +7,13 @@ import sqlite3
 from sqlite3 import Error
 import re
 
-links = []
-incidents = []
+#links = []
+#incidents = []
 normanpd_domain = "http://normanpd.normanok.gov"
 
 def fetchincidents(url):
     print("fetching incidents for " + url)
+    links = []
     html = urllib.request.urlopen(url).read()
     #print(html)
     soup = BeautifulSoup(html)
@@ -24,8 +25,9 @@ def fetchincidents(url):
     #for link in links:
     #    print(link)
 
-def extractincidents():
+def extractincidents(links):
     print("extracting incidents")
+    incidents = []
     for link in links:
         print(link)
         fp = tempfile.TemporaryFile()
@@ -54,10 +56,23 @@ def extractincidents():
             line_split = tuple(line.splitlines()) #splitting on line breaks
             arrest_time = line_split[1] #this element corresponds to arrest time column
             case_number = line_split[2] #this element corresponds to case number
-            status = line_split[-2] #second to last element is usually status
-            if status.find("Citation") != -1: #citation status goes onto 2 lines, so we need to handle that separately
-                status = line_split[-3] + line_split[-2]
-            officer = line_split[-1] #last element is officer
+            #status = line_split[-2] #second to last element is usually status
+            #if status.find("Citation") != -1: #citation status goes onto 2 lines, so we need to handle that separately
+                #status = line_split[-3] + line_split[-2]
+            officer_search = re.search(r'(\d{4} - \n?\w+)',line)
+            if officer_search:
+                officer = officer_search.group(1)
+            else:
+                officer = line_split[-1] #defualt to last column
+            if officer.find('\n') != -1: #if officer takes up 2 lines
+                status = line_split[-3]
+                if status.find("Citation") != -1:
+                    status = line_split[-4] + line_split[-3]
+            else:
+                status = line_split[-2]
+                if status.find("Citation") != -1:
+                    status = line_split[-3] + line_split[-2]
+            officer = officer.replace('\n'," ")
             arrest_location = ''
             offense = ''
             arrestee_birthday = re.search(r'\n(\d+/\d+/\d{4})\n',line).group(1)
@@ -91,8 +106,9 @@ def extractincidents():
 
 def createdb():
     print("creating db")
+    db = "normanpd.db"
     try:
-        conn = sqlite3.connect("normanpd.db")
+        conn = sqlite3.connect(db)
     except Error as e:
         print(e)
 
@@ -105,20 +121,18 @@ def createdb():
         conn.close()
     except Error as e:
         print(e)
+    return db
 
-def populatedb():
+def populatedb(db, incidents):
     print("populating db")
     try:
-        conn = sqlite3.connect("normanpd.db")
+        conn = sqlite3.connect(db)
     except Error as e:
         print(e)
     
     try:
         curs = conn.cursor()
-        #curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", ("1","1","1","1","1","1","1","1","1"))
         for incident in incidents:
-            #print("INSERTING: ")
-            #print(incident)
             curs.execute("INSERT INTO arrests VALUES (?,?,?,?,?,?,?,?,?)", incident)
 
         conn.commit()
@@ -126,12 +140,11 @@ def populatedb():
     except Error as e:
         print(e)
 
-
-def status():
+def status(db):
     print("status: getting random row")
     result = ''
     try:
-        conn = sqlite3.connect("normanpd.db")
+        conn = sqlite3.connect(db)
     except Error as e:
         print(e)
 

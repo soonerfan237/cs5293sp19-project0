@@ -9,19 +9,19 @@ def main(url):
 
     # Download data
     print(url)
-    project0.fetchincidents(url)
+    links = project0.fetchincidents(url)
 
     # Extract Data
-    project0.extractincidents()
+    incidents = project0.extractincidents(links)
 	
     # Create Dataase
-    project0.createdb()
+    db = project0.createdb()
 
     # Insert Data
-    project0.populatedb()
+    project0.populatedb(db, incidents)
 	
     # Print Status
-    project0.status()
+    project0.status(db)
 
 
 if __name__ == '__main__':
