@@ -4,13 +4,14 @@ import project0
 from project0 import main
 from project0 import project0
 
-def test_fetchincidents():
-    url = "http://normanpd.normanok.gov/content/daily-activity"
-    links = project0.fetchincidents(url)
-    incidents = 
-    assert project0.fetchincidents(url) is not None
+url = "http://normanpd.normanok.gov/content/daily-activity"
 
-def test_download_size():
-    url = "http://normanpd.normanok.gov/content/daily-activity"
+def test_fetchincidents():
     links = project0.fetchincidents(url)
-    assert
+    incidents = project0.extractincidents(links) 
+    assert links is not None
+    assert incidents is not None
+
+def test_createdb():
+    project.createdb()
+    assert 1 == 1
