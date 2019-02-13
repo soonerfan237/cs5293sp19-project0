@@ -9,6 +9,13 @@ def test_extract_request():
     with open(os.getcwd() + '/tests/files/test1.txt','r') as testfile:
         test_str = testfile.read()
     incidents = project0.parseincidents(test_str)
+    for incident in incidents:
+        print("----------------INCIDENT-----------------")
+        for field in incident:
+            print("FIELD: " + field)
+    print(" ")
+    print("NUMBER OF INCIDENTS: " + str(len(incidents)))
     db = project0.createdb()
     project0.populatedb(db, incidents)
-    assert 1 == 1
+    assert 1 == 2
+

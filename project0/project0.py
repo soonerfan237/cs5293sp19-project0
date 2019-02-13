@@ -53,17 +53,16 @@ def extractincidents(links):
 def parseincidents(page1):
     incidents = []
     page1_incidents = page1.split(";")
-    for line in page1_incidents[1:-1]: #excluding first element which is null and last element which is a header in the pdf
-        line_withoutheader = re.search(r'Officer()',line)
-        if line_withoutheader:
-            line = line_withoutheader.group(1)
+    for line in page1_incidents[0:-1]: #excluding last element which is a header in the pdf
+        #line_withoutheader = re.search(r'Officer()',line)
+        #if line_withoutheader:
+        #    line = line_withoutheader.group(1)
         #print("LINE: " + line)
+        if line.find('Officer') > 0:
+            line = line[line.find('Officer') + len('Officer'):]
         line_split = tuple(line.splitlines()) #splitting on line breaks
         arrest_time = line_split[1] #this element corresponds to arrest time column
         case_number = line_split[2] #this element corresponds to case number
-        #status = line_split[-2] #second to last element is usually status
-        #if status.find("Citation") != -1: #citation status goes onto 2 lines, so we need to handle that separately
-            #status = line_split[-3] + line_split[-2]
         officer_search = re.search(r'(\d{4} - \n?\w+)',line)
         if officer_search:
             officer = officer_search.group(1)
