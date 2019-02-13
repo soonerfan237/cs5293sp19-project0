@@ -20,7 +20,7 @@ def fetchincidents(url):
         href = link.get('href')
         if href.find('.pdf') != -1 and href.find('Arrest') != -1:
             links.append(normanpd_domain + href)
-
+    return links
     #for link in links:
     #    print(link)
 
@@ -87,6 +87,7 @@ def extractincidents():
             arrest_location = arrest_location.replace('\n'," ")
             incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
             incidents.append(incident)
+    return incidents
 
 def createdb():
     print("creating db")
@@ -128,6 +129,7 @@ def populatedb():
 
 def status():
     print("status: getting random row")
+    result = ''
     try:
         conn = sqlite3.connect("normanpd.db")
     except Error as e:
@@ -145,3 +147,4 @@ def status():
         print(result)
     except Error as e:
         print(e)
+    return result

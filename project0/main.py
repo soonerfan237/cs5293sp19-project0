@@ -12,7 +12,7 @@ def main(url):
     project0.fetchincidents(url)
 
     # Extract Data
-    incidents = project0.extractincidents()
+    project0.extractincidents()
 	
     # Create Dataase
     project0.createdb()
