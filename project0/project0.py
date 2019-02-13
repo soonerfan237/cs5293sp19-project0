@@ -16,7 +16,7 @@ def fetchincidents(url):
     links = []
     html = urllib.request.urlopen(url).read()
     #print(html)
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html,features="html.parser")
     for link in soup.find_all('a'):
         href = link.get('href')
         if href.find('.pdf') != -1 and href.find('Arrest') != -1:

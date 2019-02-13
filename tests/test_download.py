@@ -11,7 +11,3 @@ def test_fetchincidents():
     incidents = project0.extractincidents(links) 
     assert links is not None
     assert incidents is not None
-
-def test_createdb():
-    project.createdb()
-    assert 1 == 1
