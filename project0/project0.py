@@ -46,62 +46,67 @@ def extractincidents(links):
 
         # Get the first page
         page1 = pdfReader.getPage(0).extractText()
-        #print(page1)
-        page1_incidents = page1.split(";")
-        for line in page1_incidents[1:-1]: #excluding first element which is null and last element which is a header in the pdf
-            line_withoutheader = re.search(r'Officer()',line)
-            if line_withoutheader:
-                line = line_withoutheader.group(1)
-            print("LINE: " + line)
-            line_split = tuple(line.splitlines()) #splitting on line breaks
-            arrest_time = line_split[1] #this element corresponds to arrest time column
-            case_number = line_split[2] #this element corresponds to case number
-            #status = line_split[-2] #second to last element is usually status
-            #if status.find("Citation") != -1: #citation status goes onto 2 lines, so we need to handle that separately
-                #status = line_split[-3] + line_split[-2]
-            officer_search = re.search(r'(\d{4} - \n?\w+)',line)
-            if officer_search:
-                officer = officer_search.group(1)
+        print(page1)
+        incidents.extend(parseincidents(page1))
+    return incidents
+
+def parseincidents(page1):
+    incidents = []
+    page1_incidents = page1.split(";")
+    for line in page1_incidents[1:-1]: #excluding first element which is null and last element which is a header in the pdf
+        line_withoutheader = re.search(r'Officer()',line)
+        if line_withoutheader:
+            line = line_withoutheader.group(1)
+        #print("LINE: " + line)
+        line_split = tuple(line.splitlines()) #splitting on line breaks
+        arrest_time = line_split[1] #this element corresponds to arrest time column
+        case_number = line_split[2] #this element corresponds to case number
+        #status = line_split[-2] #second to last element is usually status
+        #if status.find("Citation") != -1: #citation status goes onto 2 lines, so we need to handle that separately
+            #status = line_split[-3] + line_split[-2]
+        officer_search = re.search(r'(\d{4} - \n?\w+)',line)
+        if officer_search:
+            officer = officer_search.group(1)
+        else:
+            officer = line_split[-1] #defualt to last column
+        if officer.find('\n') != -1: #if officer takes up 2 lines
+            status = line_split[-3]
+            if status.find("Citation") != -1:
+                status = line_split[-4] + line_split[-3]
+        else:
+            status = line_split[-2]
+            if status.find("Citation") != -1:
+                status = line_split[-3] + line_split[-2]
+        officer = officer.replace('\n'," ")
+        arrest_location = ''
+        offense = ''
+        arrestee_birthday = re.search(r'\n(\d+/\d+/\d{4})\n',line).group(1)
+        arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status[0:5])] #only using a substring of status here because things break when status is multiline
+        arrestee_address = arrestee_address.replace('\n'," ")
+        arrestee_address = arrestee_address.strip()
+        arrest_location_offense_name = line[line.find(case_number) + len(case_number):line.find(arrestee_birthday)]
+        arrest_location_offense_name = arrest_location_offense_name.strip('\n')
+        arrest_location_offense_name_split = arrest_location_offense_name.splitlines()
+        if len(arrest_location_offense_name_split) == 3: #if there are only 3 fields here, we know what each one is
+            arrest_location = arrest_location_offense_name_split[0]
+            offense  = arrest_location_offense_name_split[1]
+            arrestee_name = arrest_location_offense_name_split[2]
+        else: #if more than 3 fields, we have to find which lines correspond to which field
+            if ' ' in arrest_location_offense_name_split[-2][-1:]: #if a line ends in a space we know it is because it bleeds over into the next line. so if the second to last line ends in a space we know the name is contained in the two columns here.
+                arrestee_name = arrest_location_offense_name_split[-2] + arrest_location_offense_name_split[-1]
+            else: #the name is just one line in length
+                arrestee_name = arrest_location_offense_name_split[-1]
+            if ' ' in arrest_location_offense_name_split[0][-1:]:
+                arrest_location = arrest_location_offense_name_split[0] + arrest_location_offense_name_split[1]
+                offense = arrest_location_offense_name[len(arrest_location_offense_name_split[0]) + len(arrest_location_offense_name_split[1]) + 1:arrest_location_offense_name.find(arrestee_name[:5])]
             else:
-                officer = line_split[-1] #defualt to last column
-            if officer.find('\n') != -1: #if officer takes up 2 lines
-                status = line_split[-3]
-                if status.find("Citation") != -1:
-                    status = line_split[-4] + line_split[-3]
-            else:
-                status = line_split[-2]
-                if status.find("Citation") != -1:
-                    status = line_split[-3] + line_split[-2]
-            officer = officer.replace('\n'," ")
-            arrest_location = ''
-            offense = ''
-            arrestee_birthday = re.search(r'\n(\d+/\d+/\d{4})\n',line).group(1)
-            arrestee_address = line[line.find(arrestee_birthday) + len(arrestee_birthday):line.find(status[0:5])] #only using a substring of status here because things break when status is multiline
-            arrestee_address = arrestee_address.replace('\n'," ")
-            arrestee_address = arrestee_address.strip()
-            arrest_location_offense_name = line[line.find(case_number) + len(case_number):line.find(arrestee_birthday)]
-            arrest_location_offense_name = arrest_location_offense_name.strip('\n')
-            arrest_location_offense_name_split = arrest_location_offense_name.splitlines()
-            if len(arrest_location_offense_name_split) == 3: #if there are only 3 fields here, we know what each one is
                 arrest_location = arrest_location_offense_name_split[0]
-                offense  = arrest_location_offense_name_split[1]
-                arrestee_name = arrest_location_offense_name_split[2]
-            else: #if more than 3 fields, we have to find which lines correspond to which field
-                if ' ' in arrest_location_offense_name_split[-2][-1:]: #if a line ends in a space we know it is because it bleeds over into the next line. so if the second to last line ends in a space we know the name is contained in the two columns here.
-                    arrestee_name = arrest_location_offense_name_split[-2] + arrest_location_offense_name_split[-1]
-                else: #the name is just one line in length
-                    arrestee_name = arrest_location_offense_name_split[-1]
-                if ' ' in arrest_location_offense_name_split[0][-1:]:
-                    arrest_location = arrest_location_offense_name_split[0] + arrest_location_offense_name_split[1]
-                    offense = arrest_location_offense_name[len(arrest_location_offense_name_split[0]) + len(arrest_location_offense_name_split[1]) + 1:arrest_location_offense_name.find(arrestee_name[:5])]
-                else:
-                    arrest_location = arrest_location_offense_name_split[0]
-                    offense = arrest_location_offense_name[arrest_location_offense_name.find(arrest_location) + len(arrest_location):arrest_location_offense_name.find(arrestee_name[:5])]
-            offense = offense.strip('\n')
-            offense = offense.replace('\n'," ")
-            arrest_location = arrest_location.replace('\n'," ")
-            incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
-            incidents.append(incident)
+                offense = arrest_location_offense_name[arrest_location_offense_name.find(arrest_location) + len(arrest_location):arrest_location_offense_name.find(arrestee_name[:5])]
+        offense = offense.strip('\n')
+        offense = offense.replace('\n'," ")
+        arrest_location = arrest_location.replace('\n'," ")
+        incident = (arrest_time, case_number, arrest_location, offense, arrestee_name, arrestee_birthday, arrestee_address, status, officer)
+        incidents.append(incident)
     return incidents
 
 def createdb():
