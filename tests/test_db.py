@@ -41,3 +41,10 @@ def test_schema():
     assert columns[6][1] == 'arrestee_address'
     assert columns[7][1] == 'status'
     assert columns[8][1] == 'officer'
+
+def test_status():
+    links = project0.fetchincidents(url)
+    incidents = project0.extractincidents(links)
+    db = project0.createdb()
+    project0.populatedb(db, incidents)
+    assert project0.status(db) is not None
