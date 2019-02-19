@@ -14,7 +14,7 @@ def fetchincidents(url): #method takes url of single pdf as argument
         output.write(data) #writing bytes to tmp folder
 
 def fetchincidents_test(test_file): #this method is only used for testing the subsequent methods
-    os.popen('cp /tests/files/' + test_file + ' /tmp/output') #copies a local test pdf to the output folder to be used in later methods
+    os.popen('cp ' + os.getcwd() + '/tests/files/' + test_file + ' ' + os.getcwd() + '/tmp/output') #copies a local test pdf to the output folder to be used in later methods
 
 def extractincidents(): #method to extract incidents
     print("extracting incidents")

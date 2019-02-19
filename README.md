@@ -41,4 +41,4 @@ test_createdb() will test that the normanpd.db gets created successfully.
 test_schema() will verify that the arrests table gets created and with the expected schema.
 test_status() will verify that a random record can be retrieved from the database.  This test is run by extracting incidents from a local test pdf.
 test_fetchincidents() will verify that incidents can be parsed from the test file.
-test_extract_request() will verify that the correct number of incidents is parsed from the test file.
+test_extract_request() will verify that the correct number of incidents is parsed from the test file.  It will also verify that the correct fields are parsed from various incidents in the file.
