@@ -9,10 +9,10 @@ def main(url):
 
     # Download data
     print(url)
-    links = project0.fetchincidents(url)
+    project0.fetchincidents(url)
 
     # Extract Data
-    incidents = project0.extractincidents(links)
+    incidents = project0.extractincidents()#links)
 	
     # Create Dataase
     db = project0.createdb()

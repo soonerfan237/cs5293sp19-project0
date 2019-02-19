@@ -1,56 +1,72 @@
 import urllib.request
 from PyPDF2 import PdfFileReader
 import tempfile
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 import re
 import sqlite3
 from sqlite3 import Error
 import re
-
+import os
 #links = []
 #incidents = []
-normanpd_domain = "http://normanpd.normanok.gov"
+#data = b''
+#normanpd_domain = "http://normanpd.normanok.gov"
 
 def fetchincidents(url):
     print("fetching incidents for " + url)
-    links = []
-    html = urllib.request.urlopen(url).read()
+    #links = []
+    data = urllib.request.urlopen(url).read()
+    with open(os.getcwd() + '/tmp/output', 'wb') as output:
+        output.write(data)
+    print("DATA TYPE VARIABLE:")
+    print(type(data))
+    #print(data)
     #print(html)
-    soup = BeautifulSoup(html,features="html.parser")
-    for link in soup.find_all('a'):
-        href = link.get('href')
-        if href.find('.pdf') != -1 and href.find('Arrest') != -1:
-            links.append(normanpd_domain + href)
-    return links
+    #soup = BeautifulSoup(html,features="html.parser")
+    #for link in soup.find_all('a'):
+    #    href = link.get('href')
+    #    if href.find('.pdf') != -1 and href.find('Arrest') != -1:
+    #        links.append(normanpd_domain + href)
+    #return links
     #for link in links:
     #    print(link)
+    #return data
 
-def extractincidents(links):
+def fetchincidents_test(test_file):
+    os.popen('cp /tests/files/' + test_file + ' /tmp/output')
+    #data = open(os.getcwd() + '/tests/files/output', 'rb').read()
+    #with open(os.getcwd() + '/tmp/output', 'wb') as output:
+    #    output.write(data)
+
+#def extractincidents(links):
+def extractincidents():
     print("extracting incidents")
-    incidents = []
-    for link in links:
-        print(link)
-        fp = tempfile.TemporaryFile()
+    #print(data)
+    #incidents = []
+    #for link in links:
+    #    print(link)
+    fp = tempfile.TemporaryFile()
 
-        # Write the pdf data to a temp file
-        data = urllib.request.urlopen(link).read()
-        #print(data)
-        fp.write(data)
+    # Write the pdf data to a temp file
+    #data = urllib.request.urlopen(link).read()
+    #print(data)
+    data = open(os.getcwd() + '/tmp/output', 'rb').read()
+    fp.write(data)
 
-        # Set the curser of the file back to the begining
-        fp.seek(0)
+    # Set the curser of the file back to the begining
+    fp.seek(0)
 
-        # Read the PDF
-        pdfReader = PdfFileReader(fp)
-        pdfReader.getNumPages()
+    # Read the PDF
+    pdfReader = PdfFileReader(fp)
+    pdfReader.getNumPages()
 
-        # Get the first page
-        page1 = pdfReader.getPage(0).extractText()
-        print(page1)
-        incidents.extend(parseincidents(page1))
-    return incidents
+    # Get the first page
+    page1 = pdfReader.getPage(0).extractText()
+    #print(page1)
+    #incidents.extend(parseincidents(page1))
+    #return incidents
 
-def parseincidents(page1):
+#def parseincidents(page1):
     incidents = []
     page1_incidents = page1.split(";")
     for line in page1_incidents[0:-1]: #excluding last element which is a header in the pdf
