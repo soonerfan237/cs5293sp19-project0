@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
 # Example main.py
 import argparse
-
 import project0
 
 def main(url):
-    print("test")
 
     # Download data
-    print(url)
-    project0.fetchincidents(url)
+    project0.fetchincidents(url) #calling method to download pdf to tmp folder
 
     # Extract Data
-    incidents = project0.extractincidents()#links)
+    incidents = project0.extractincidents() #extracting incidents from pdf
 	
     # Create Dataase
-    db = project0.createdb()
+    db = project0.createdb() #creating norman pd database
 
     # Insert Data
-    project0.populatedb(db, incidents)
+    project0.populatedb(db, incidents) #populating database with incidents
 	
     # Print Status
-    project0.status(db)
+    project0.status(db) #printing random record
 
 
 if __name__ == '__main__':
